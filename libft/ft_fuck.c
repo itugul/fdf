@@ -1,39 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_pars.c                                          :+:      :+:    :+:   */
+/*   ft_fuck.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ehaggon <ehaggon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/04/17 18:09:26 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/05/01 04:37:12 by ehaggon          ###   ########.fr       */
+/*   Created: 2018/11/23 16:05:58 by ehaggon           #+#    #+#             */
+/*   Updated: 2019/05/01 04:36:13 by ehaggon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <string.h>
+#include <stdio.h>
+#include <stddef.h>
 #include "libft.h"
 
-int			ft_pars(char **str, const char *delim, char **wrd)
+char ft_fuck(const char *s, int c)
 {
-	char	ret;
-	char	a;
-	int 	i;
+	char c2;
+	int i;
 
 	i = 0;
-	ret = '~';
-	if (*str == '\0')
-		return (-1);
-	while (*str != '\0' && (a = ft_fuck(delim, **str)) != -1)
+	c2 = (char)c;
+	while (s[i] != c2)
 	{
-		*str += 1;
-		// printf("a = [%c]\n", a);
-		ret = a < ret ? a : ret;
-	}
-	if (*str == '\0')
-		return (-1);
-	while (*str != '\0' && ft_fuck(delim, **str) == -1 && ++*str)
+		if (s[i] == '\0')
+			return (-1);
 		i++;
-	*str = *str - i;
-	*wrd = ft_strsub(*str, 0, i);
-	*str += i;
-	return (ret);
+	}
+	if (i == 0)
+	{
+		return (s[i]);
+	}
+	else
+		return(s[i]);
 }

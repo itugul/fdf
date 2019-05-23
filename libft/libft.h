@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ehaggon <ehaggon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/09/21 21:30:24 by jrameau           #+#    #+#             */
-/*   Updated: 2019/04/25 18:43:15 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/05/01 03:52:57 by ehaggon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,8 @@ void				ft_lstadd(t_list **alst, t_list *new);
 void				ft_lstiter(t_list *lst, void (*f)(t_list *elem));
 t_list				*ft_lstmap(t_list *lst, t_list *(*f)(t_list *elem));
 
-# define BUFF_SIZE 5
+# define BUFF_SIZE 50
+# define MAXFILED 50000
 
 typedef struct		s_dict
 {
@@ -119,6 +120,6 @@ int					ft_abs(int number);
 int					ft_report(char *str);
 char				*ft_strtok(char *str, const char *delim);
 char				*ft_chrstr(const char *s, const char c);
-char				*ft_pars(char **str, const char *delim, char **wrd);
-
+int					ft_pars(char **str, const char *delim, char **wrd);
+char				ft_fuck(const char *s, int c);
 #endif

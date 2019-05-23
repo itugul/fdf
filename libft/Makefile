@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+         #
+#    By: ehaggon <ehaggon@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/12/05 17:31:03 by fbrekke           #+#    #+#              #
-#    Updated: 2019/04/25 14:42:26 by fbrekke          ###   ########.fr        #
+#    Updated: 2019/05/01 03:30:36 by ehaggon          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -84,6 +84,7 @@ SRCS		= ft_memset.c \
 				ft_strtok.c \
 				ft_chrstr.c \
 				ft_pars.c \
+				ft_fuck.c \
 
 NAME = libft.a
 OBJ = $(SRCS:%.c=%.o)

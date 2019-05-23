@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/18 12:30:05 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/04/25 18:09:34 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/05/08 11:38:40 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ struct					s_map
 	int				z;
 	int				collor;
 	struct s_map	*next;
+	struct s_map	*up;
 };
 
 void				push(t_map **head, int *data);
