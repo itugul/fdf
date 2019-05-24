@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/10 12:24:14 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/05/08 12:04:51 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/05/24 18:51:26 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ t_map				*getNth(t_map *head, int n)
 
 // int			deal_key(int key, void *param)
 // {
-// 	ft_putchar('X');
+// 	ft_putchar(key);
 // 	return (0);
 // }
 
@@ -57,17 +57,21 @@ void		draw_DDA(void *mlx_ptr, void *win_ptr, float *x, float *y)
 
 	step = (ft_abs(x[1] - x[0])) >= (ft_abs(y[1] - y[0])) ?
 		(ft_abs(x[1] - x[0])) : (ft_abs(y[1] - y[0]));
-	x[2] = ft_abs(x[1] - x[0]) / step;
-	y[2] = ft_abs(y[1] - y[0]) / step;
+	// x[2] = ft_abs(x[1] - x[0]) / step;
+	// y[2] = ft_abs(y[1] - y[0]) / step;
+	x[2] = (x[1] - x[0]) / step;
+	y[2] = (y[1] - y[0]) / step;
 	i = 1;
+	// printf("stage = %d/%d\nx[0] = %f\ny[0] = %f\nx[1] = %f\ny[1] = %f\nx[2] = %f\ny[2] = %f\n", i, step, x[0], y[0], x[1], y[1], x[2], y[2]);
 	while (i <= step)
 	{
 		mlx_pixel_put(mlx_ptr, win_ptr, x[0], y[0], 0x0000FF);
-		printf("step = %d/%d\nx[0] = %f\ny[0] = %f\n", i, step, x[0], y[0]);
-		if (x[0] < x[1])
-			x[0] = x[0] + x[2] > x[1] ? x[1] : x[0] + x[2];
-		if (y[0] < y[1])
-			y[0] = y[0] + y[2] > y[1] ? y[1] : y[0] + y[2];
+		// if (x[0] < x[1])
+		// 	x[0] = x[0] + x[2] > x[1] ? x[1] : x[0] + x[2];
+		// if (y[0] < y[1])
+		// 	y[0] = y[0] + y[2] > y[1] ? y[1] : y[0] + y[2];
+		x[0] = x[0] + x[2];
+		y[0] = y[0] + y[2];
 		i++;
 	}
 }
@@ -152,6 +156,7 @@ int			read_map(int fd, t_map **map)
 		tmp = line;
 		n[0] = n[1];
 		n[1] = ft_num_words(line, ' ');
+		printf("num words = %d\n", n[1]);
 		if (n[0] != 0 && n[1] != n[0])
 			return (ft_report("not valid map"));
 		while (*line != '\0' && ((d = ft_pars(&line, " ,", &wrd))!= -1) && (xyzc[1] < n[1]))
@@ -170,7 +175,11 @@ int			read_map(int fd, t_map **map)
 				xyzc[2] = ft_atoi(wrd);
 				push(map, xyzc);
 				if (xyzc[0] > 0)
+				{
 					(*map)->up = getNth(*map, n[1]);
+					// if ((*map)->up)
+					// 	printf("(*map)->up->x == %d | (*map)->up->y == %d\n", (*map)->up->x, (*map)->up->y);
+				}
 				// printf("2)map[%d][%d] = %d\n", (*map)->x, (*map)->y, (*map)->z);
 				xyzc[1]++;
 			}
@@ -190,15 +199,17 @@ int			read_map(int fd, t_map **map)
 	return (0);
 }
 
-static void	iso(int *x, int *y, int z)
+static void	iso(float *x, float *y, int z)
 {
-	int		previous_x;
-	int		previous_y;
+	float	previous_x;
+	float	previous_y;
 
 	previous_x = *x;
 	previous_y = *y;
 	*x = (previous_x - previous_y) * cos(0.523599);
 	*y = -z + (previous_x + previous_y) * sin(0.523599);
+	// *x = previous_x * cos(45) - (z * sin(45));
+	// *y = -z + (previous_x + previous_y) * sin(0.523599);
 }
 
 int			main(int argc, char **argv)
@@ -219,39 +230,48 @@ int			main(int argc, char **argv)
 	map = NULL;
 	if (read_map(fd, &map) == -1)
 		return (ft_report("read_map error"));
-	// printf("%d ", map[0][0]);
-	// ft_putendl("");
-	// print_int_arr(map);
 
 	mlx_ptr = mlx_init();
 	win_ptr = mlx_new_window(mlx_ptr, 1000, 1000, "test");
-	// draw_web(mlx_ptr, win_ptr, 10, 10);
 
 	tmp = map;
-	// printf("x = %d\n", tmp->x);
-	// printf("y = %d\n", tmp->y);
-	// printf("z = %d\n", tmp->z);
+
 	while (tmp->next != NULL)
 	{
-		// ft_putendl("!!!");
-		// printf("x = %d, y = %d, z = %d", tmp->x, tmp->y, tmp->z);
-		// iso(&tmp->x, &tmp->y, tmp->z);
-		x[0] = tmp->x * 25 + 25;
-		y[0] = tmp->y * 25 + 25;
-		x[1] = tmp->next->x * 25 + 25;
-		y[1] = tmp->next->y * 25 + 25;
-		x[2] = 0;
-		y[2] = 0;
-		draw_DDA(mlx_ptr, win_ptr, y, x);
-		if (tmp->up)
+		if (tmp->x <= tmp->next->x)
 		{
-			x[1] = tmp->up->x * 25 + 25;
-			y[1] = tmp->up->y * 25 + 25;
+			// ft_putendl("---------------");
+			// printf("1)x = %d, y = %d, z = %d\n", tmp->x, tmp->y, tmp->z);
+			// iso(&tmp->x, &tmp->y, tmp->z);
+			// printf("2)x = %d, y = %d, z = %d\n", tmp->x, tmp->y, tmp->z);
+			// ft_putendl("---------------");
+			x[0] = (tmp->x * 25) + 300;
+			y[0] = (tmp->y * 25) + 300;
+			x[1] = (tmp->next->x * 25) + 300;
+			y[1] = (tmp->next->y * 25) + 300;
+			x[2] = 0;
+			y[2] = 0;
+			// iso(&x[0], &y[0], tmp->z);
+			// iso(&x[1], &y[1], tmp->z);
+			// printf("A%d)x[0] = %f | y[0] = %f\n     x[1] = %f | y[1] = %f\n", i, x[0], y[0], x[1], y[1]);
 			draw_DDA(mlx_ptr, win_ptr, y, x);
+			if (tmp->up)
+			{
+				x[1] = (tmp->up->x * 25) + 300;
+				y[1] = (tmp->up->y * 25) + 275;
+				// ft_putendl("---------------");
+				printf("B%d)x[0] = %f | y[0] = %f\n*****x[1] = %f | y[1] = %f\n", i, x[0], y[0], x[1], y[1]);
+				// iso(&x[1], &y[1], tmp->z);
+				draw_DDA(mlx_ptr, win_ptr, y, x);
+				// ft_putendl("---------------");
+			}
+			i++;
 		}
+		tmp = tmp->next;
 	}
 
-	//draw_DDA(mlx_ptr, win_ptr, x, y);
+	// mlx_hook(win_ptr, 6, int x_mask, int (*funct)(), void *param);
+
 	// mlx_string_put (mlx_ptr, win_ptr, 0, 0, 0xFFFFFF, "TEST");
 	// mlx_key_hook(win_ptr, deal_key, (void *)0);
 	mlx_loop(mlx_ptr);
