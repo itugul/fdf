@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/10 12:24:14 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/05/24 18:51:26 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/05/30 19:11:16 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,21 @@
 #include "fdf.h"
 #include <math.h>
 
+int SCALE = 15;
+int INDENT_X = 300;
+int INDENT_Y = 300;
+
 void				push(t_map **head, int *data)
 {
 	t_map			*tmp;
 
 	if (!(tmp = (t_map*)malloc(sizeof(t_map))))
 		return ;
+	tmp->line_num = data[0];
 	tmp->x = data[0];
 	tmp->y = data[1];
 	tmp->z = data[2];
-	tmp->collor = data[3];
+	tmp->color = DEF_COLOR;
 	tmp->next = (*head);
 	tmp->up = NULL;
 	(*head) = tmp;
@@ -44,16 +49,57 @@ t_map				*getNth(t_map *head, int n)
 
 // int			deal_key(int key, void *param)
 // {
-// 	ft_putchar(key);
+// 	if (key == 78)
+// 	{
+// 		ft_putchar('-');
+// 		SCALE--;
+// 		printf("%d\n", SCALE);
+// 		// draw_map(param[0], param[1], param[2]);
+// 	}
+// 	else if (key == 69)
+// 	{
+// 		ft_putchar('+');
+// 		SCALE++;
+// 		printf("%d\n", SCALE);
+// 	}
 // 	return (0);
 // }
 
+int get_light(int start, int end, double percentage)
+{
+    return ((int)((1 - percentage) * start + percentage * end));
+}
 
-// line drawing!!!!
-void		draw_DDA(void *mlx_ptr, void *win_ptr, float *x, float *y)
+static int	gradient(int i, int step, t_map *start, t_map *end)
+{
+	double percentage;
+	int red;
+    int green;
+    int blue;
+
+	if (start->color == end->color)
+        return (start->color);
+
+	percentage = i / step;
+
+    red = get_light((start->color >> 16) & 0xFF, (end->color >> 16) & 0xFF, percentage);
+    green = get_light((start->color >> 8) & 0xFF, (end->color >> 8) & 0xFF, percentage);
+    blue = get_light(start->color & 0xFF, end->color & 0xFF, percentage);
+    return ((red << 16) | (green << 8) | blue);
+}
+
+void		draw_DDA(void *mlx_ptr, void *win_ptr, t_map *start, t_map *end)
 {
 	int		step;
 	int		i;
+	float	x[3];
+	float	y[3];
+	int		color;
+
+	x[0] = (start->y * SCALE) + INDENT_Y;
+	x[1] = (end->y * SCALE) + INDENT_Y;
+	y[0] = (start->x * SCALE) + INDENT_X + 500;
+	y[1] = (end->x * SCALE) + INDENT_X + 500;
 
 	step = (ft_abs(x[1] - x[0])) >= (ft_abs(y[1] - y[0])) ?
 		(ft_abs(x[1] - x[0])) : (ft_abs(y[1] - y[0]));
@@ -65,7 +111,8 @@ void		draw_DDA(void *mlx_ptr, void *win_ptr, float *x, float *y)
 	// printf("stage = %d/%d\nx[0] = %f\ny[0] = %f\nx[1] = %f\ny[1] = %f\nx[2] = %f\ny[2] = %f\n", i, step, x[0], y[0], x[1], y[1], x[2], y[2]);
 	while (i <= step)
 	{
-		mlx_pixel_put(mlx_ptr, win_ptr, x[0], y[0], 0x0000FF);
+		color = gradient(i, step, start, end);
+		mlx_pixel_put(mlx_ptr, win_ptr, x[0], y[0], color);
 		// if (x[0] < x[1])
 		// 	x[0] = x[0] + x[2] > x[1] ? x[1] : x[0] + x[2];
 		// if (y[0] < y[1])
@@ -136,15 +183,14 @@ int			read_map(int fd, t_map **map)
 	char	*wrd;
 	char	d;
 	int		t;
-	int		xyzc[4];
+	int		xyz[3];
 	int 	n[2];
 
 	n[0] = 0;
 	n[1] = 0;
-	xyzc[0] = 0;
-	xyzc[1] = 0;
-	xyzc[2] = 0;
-	xyzc[3] = 0;
+	xyz[0] = 0;
+	xyz[1] = 0;
+	xyz[2] = 0;
 
 	wrd = ft_strnew(1);
 
@@ -156,10 +202,10 @@ int			read_map(int fd, t_map **map)
 		tmp = line;
 		n[0] = n[1];
 		n[1] = ft_num_words(line, ' ');
-		printf("num words = %d\n", n[1]);
+		// printf("num words = %d\n", n[1]);
 		if (n[0] != 0 && n[1] != n[0])
 			return (ft_report("not valid map"));
-		while (*line != '\0' && ((d = ft_pars(&line, " ,", &wrd))!= -1) && (xyzc[1] < n[1]))
+		while (*line != '\0' && ((d = ft_pars(&line, " ,", &wrd))!= -1) && (xyz[1] < n[1]))
 		{
 			// printf("d = [%c]\n", d);
 			// printf("wrd = [%s]\n", wrd);
@@ -167,25 +213,25 @@ int			read_map(int fd, t_map **map)
 
 			if (d == ',')
 			{
-				(*map)->collor = hex_to_int(wrd);
-				// printf("1)map[%d][%d] = %d, collor = %d\n", (*map)->x, (*map)->y, (*map)->z, (*map)->collor);
+				(*map)->color = hex_to_int(wrd);
+				// printf("1)map[%d][%d] = %d, color = %d\n", (*map)->x, (*map)->y, (*map)->z, (*map)->color);
 			}
 			else
 			{
-				xyzc[2] = ft_atoi(wrd);
-				push(map, xyzc);
-				if (xyzc[0] > 0)
+				xyz[2] = ft_atoi(wrd);
+				push(map, xyz);
+				if (xyz[0] > 0)
 				{
 					(*map)->up = getNth(*map, n[1]);
 					// if ((*map)->up)
 					// 	printf("(*map)->up->x == %d | (*map)->up->y == %d\n", (*map)->up->x, (*map)->up->y);
 				}
 				// printf("2)map[%d][%d] = %d\n", (*map)->x, (*map)->y, (*map)->z);
-				xyzc[1]++;
+				xyz[1]++;
 			}
 		}
-		xyzc[0]++;
-		xyzc[1] = 0;
+		xyz[0]++;
+		xyz[1] = 0;
 		// ft_putendl("-----------------------------");
 		// printf("t = [%d]\n", t);
 		// line -= --t;
@@ -199,29 +245,100 @@ int			read_map(int fd, t_map **map)
 	return (0);
 }
 
-static void	iso(float *x, float *y, int z)
+static void	iso(t_map *tmp)
 {
 	float	previous_x;
 	float	previous_y;
 
-	previous_x = *x;
-	previous_y = *y;
-	*x = (previous_x - previous_y) * cos(0.523599);
-	*y = -z + (previous_x + previous_y) * sin(0.523599);
-	// *x = previous_x * cos(45) - (z * sin(45));
-	// *y = -z + (previous_x + previous_y) * sin(0.523599);
+	while (tmp != NULL)
+	{
+		previous_x = tmp->x;
+		previous_y = tmp->y;
+		tmp->x = (previous_x - previous_y) * cos(0.523599);
+		tmp->y = -tmp->z + (previous_x + previous_y) * sin(0.523599);
+
+		tmp = tmp->next;
+	}
+}
+
+static void	draw_map(void *mlx_ptr,void *win_ptr, t_map *map)
+{
+	while (map->next != NULL)
+	{
+		if (map->line_num == map->next->line_num)
+		{
+			// printf("A%d)x[0] = %f | y[0] = %f\n     x[1] = %f | y[1] = %f\n", i, x[0], y[0], x[1], y[1]);
+			draw_DDA(mlx_ptr, win_ptr, map, map->next);
+			if (map->up)
+			{
+				// ft_putendl("---------------");
+				// printf("B%d)x[0] = %f | y[0] = %f\n*****x[1] = %f | y[1] = %f\n", i, x[0], y[0], x[1], y[1]);
+				draw_DDA(mlx_ptr, win_ptr, map, map->up);
+				// ft_putendl("---------------");
+			}
+		}
+		else
+			draw_DDA(mlx_ptr, win_ptr, map, map->up);
+		
+		map = map->next;
+	}
+	// draw_DDA(mlx_ptr, win_ptr, map, map);
+}
+
+int key_press(int keycode, void **param)
+{
+	if (keycode == 78)
+	{
+		SCALE--;
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
+	}
+	else if (keycode == 69)
+	{
+		SCALE++;
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
+	}
+	else if (keycode == 76)
+	{
+		SCALE = 15;
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
+	}
+	else if (keycode == 126)
+	{
+		INDENT_X -= 10;
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
+	}
+	else if (keycode == 125)
+	{
+		INDENT_X += 10;
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
+	}
+	else if (keycode == 123)
+	{
+		INDENT_Y -= 10;
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
+	}
+	else if (keycode == 124)
+	{
+		INDENT_Y += 10;
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
+	}
+	return (0);
 }
 
 int			main(int argc, char **argv)
 {
 	void	*mlx_ptr;
 	void	*win_ptr;
-	float	x[3];
-	float	y[3];
 	int		fd;
 	t_map	*map;
-	t_map	*tmp;
-	int		i = 0;
+	void	*param[3];
 
 	if (argc != 2)
 		return (ft_report("usage: ./fdf [input_file]"));
@@ -231,48 +348,20 @@ int			main(int argc, char **argv)
 	if (read_map(fd, &map) == -1)
 		return (ft_report("read_map error"));
 
+	iso(map);
+
 	mlx_ptr = mlx_init();
-	win_ptr = mlx_new_window(mlx_ptr, 1000, 1000, "test");
+	win_ptr = mlx_new_window(mlx_ptr, 1300, 1300, "test");
+	param[0] = mlx_ptr;
+	param[1] = win_ptr;
+	param[2] = map;
 
-	tmp = map;
+	// mlx_key_hook(win_ptr, deal_key, (void *)(mlx_ptr, win_ptr, map));
+	mlx_hook(win_ptr, 2, 0, key_press, param);
+	draw_map(mlx_ptr, win_ptr, map);
 
-	while (tmp->next != NULL)
-	{
-		if (tmp->x <= tmp->next->x)
-		{
-			// ft_putendl("---------------");
-			// printf("1)x = %d, y = %d, z = %d\n", tmp->x, tmp->y, tmp->z);
-			// iso(&tmp->x, &tmp->y, tmp->z);
-			// printf("2)x = %d, y = %d, z = %d\n", tmp->x, tmp->y, tmp->z);
-			// ft_putendl("---------------");
-			x[0] = (tmp->x * 25) + 300;
-			y[0] = (tmp->y * 25) + 300;
-			x[1] = (tmp->next->x * 25) + 300;
-			y[1] = (tmp->next->y * 25) + 300;
-			x[2] = 0;
-			y[2] = 0;
-			// iso(&x[0], &y[0], tmp->z);
-			// iso(&x[1], &y[1], tmp->z);
-			// printf("A%d)x[0] = %f | y[0] = %f\n     x[1] = %f | y[1] = %f\n", i, x[0], y[0], x[1], y[1]);
-			draw_DDA(mlx_ptr, win_ptr, y, x);
-			if (tmp->up)
-			{
-				x[1] = (tmp->up->x * 25) + 300;
-				y[1] = (tmp->up->y * 25) + 275;
-				// ft_putendl("---------------");
-				printf("B%d)x[0] = %f | y[0] = %f\n*****x[1] = %f | y[1] = %f\n", i, x[0], y[0], x[1], y[1]);
-				// iso(&x[1], &y[1], tmp->z);
-				draw_DDA(mlx_ptr, win_ptr, y, x);
-				// ft_putendl("---------------");
-			}
-			i++;
-		}
-		tmp = tmp->next;
-	}
-
-	// mlx_hook(win_ptr, 6, int x_mask, int (*funct)(), void *param);
 
 	// mlx_string_put (mlx_ptr, win_ptr, 0, 0, 0xFFFFFF, "TEST");
-	// mlx_key_hook(win_ptr, deal_key, (void *)0);
+
 	mlx_loop(mlx_ptr);
 }
