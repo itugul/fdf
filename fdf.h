@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/18 12:30:05 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/05/30 17:28:21 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/05/31 16:45:30 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,12 @@ struct					s_map
 	float			x;
 	float			y;
 	float			z;
+	float			anim_x;
+	float			anim_y;
+	float			anim_z;
+	float			fin_x;
+	float			fin_y;
+	float			fin_z;
 	int				color;
 	struct s_map	*next;
 	struct s_map	*up;

@@ -6,17 +6,20 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/10 12:24:14 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/05/30 19:11:16 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/05/31 18:13:41 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "mlx.h"
 #include "fdf.h"
 #include <math.h>
+#include <stdio.h>
 
 int SCALE = 15;
 int INDENT_X = 300;
 int INDENT_Y = 300;
+int	ANIM_FLAG = 0;
+int	H = 0;
 
 void				push(t_map **head, int *data)
 {
@@ -28,6 +31,12 @@ void				push(t_map **head, int *data)
 	tmp->x = data[0];
 	tmp->y = data[1];
 	tmp->z = data[2];
+	tmp->anim_x = 0;
+	tmp->anim_y = 0;
+	tmp->anim_z = 0;
+	tmp->fin_x = data[0] * SCALE;
+	tmp->fin_y = data[1] * SCALE;
+	tmp->fin_z = data[2] * SCALE;
 	tmp->color = DEF_COLOR;
 	tmp->next = (*head);
 	tmp->up = NULL;
@@ -96,10 +105,20 @@ void		draw_DDA(void *mlx_ptr, void *win_ptr, t_map *start, t_map *end)
 	float	y[3];
 	int		color;
 
-	x[0] = (start->y * SCALE) + INDENT_Y;
-	x[1] = (end->y * SCALE) + INDENT_Y;
-	y[0] = (start->x * SCALE) + INDENT_X + 500;
-	y[1] = (end->x * SCALE) + INDENT_X + 500;
+	if (ANIM_FLAG == 1)
+	{
+		x[0] = (start->y * SCALE) + INDENT_Y;
+		x[1] = (end->y * SCALE) + INDENT_Y;
+		y[0] = (start->x * SCALE) + INDENT_X + 500;
+		y[1] = (end->x * SCALE) + INDENT_X + 500;
+	}
+	else
+	{
+		x[0] = start->anim_y + INDENT_Y;
+		x[1] = end->anim_y + INDENT_Y;
+		y[0] = start->anim_x + INDENT_X + 500;
+		y[1] = end->anim_x + INDENT_X + 500;
+	}
 
 	step = (ft_abs(x[1] - x[0])) >= (ft_abs(y[1] - y[0])) ?
 		(ft_abs(x[1] - x[0])) : (ft_abs(y[1] - y[0]));
@@ -185,6 +204,7 @@ int			read_map(int fd, t_map **map)
 	int		t;
 	int		xyz[3];
 	int 	n[2];
+	int 	h;
 
 	n[0] = 0;
 	n[1] = 0;
@@ -195,6 +215,7 @@ int			read_map(int fd, t_map **map)
 	wrd = ft_strnew(1);
 
 	t = 0;
+	h = 0;
 	// printf("BUFF_SIZE = [%d]\n", BUFF_SIZE);
 	while ((t = get_next_line(fd, &line)) > 0)
 	{
@@ -219,6 +240,7 @@ int			read_map(int fd, t_map **map)
 			else
 			{
 				xyz[2] = ft_atoi(wrd);
+				h = h < ft_abs(xyz[2]) ? ft_abs(xyz[2]) : h;
 				push(map, xyz);
 				if (xyz[0] > 0)
 				{
@@ -242,21 +264,20 @@ int			read_map(int fd, t_map **map)
 	ft_strdel(&wrd);
 	if (t == -1)
 		return (ft_report("read error"));
-	return (0);
+	return (h);
 }
 
 static void	iso(t_map *tmp)
 {
-	float	previous_x;
-	float	previous_y;
-
+	if (ANIM_FLAG == 1)
+		tmp->anim_z = tmp->fin_z;
 	while (tmp != NULL)
 	{
-		previous_x = tmp->x;
-		previous_y = tmp->y;
-		tmp->x = (previous_x - previous_y) * cos(0.523599);
-		tmp->y = -tmp->z + (previous_x + previous_y) * sin(0.523599);
-
+		tmp->anim_x = (tmp->fin_x - tmp->fin_y) * cos(0.523599);
+		tmp->anim_y = -tmp->anim_z + (tmp->fin_x + tmp->fin_y) * sin(0.523599);
+		tmp->anim_z = tmp->anim_z != tmp->z && tmp->z > 0 ? tmp->anim_z + 1 : tmp->anim_z;
+		tmp->anim_z = tmp->anim_z != tmp->z && tmp->z < 0 ? tmp->anim_z - 1 : tmp->anim_z;
+		// printf("z = %f\nanim_z = %f\n", tmp->z, tmp->anim_z);
 		tmp = tmp->next;
 	}
 }
@@ -291,15 +312,17 @@ int key_press(int keycode, void **param)
 	{
 		SCALE--;
 		mlx_clear_window(param[0], param[1]);
+		iso(param[2]);
 		draw_map(param[0], param[1], param[2]);
 	}
 	else if (keycode == 69)
 	{
 		SCALE++;
 		mlx_clear_window(param[0], param[1]);
+		iso(param[2]);
 		draw_map(param[0], param[1], param[2]);
 	}
-	else if (keycode == 76)
+	else if (keycode == 87)
 	{
 		SCALE = 15;
 		mlx_clear_window(param[0], param[1]);
@@ -329,6 +352,20 @@ int key_press(int keycode, void **param)
 		mlx_clear_window(param[0], param[1]);
 		draw_map(param[0], param[1], param[2]);
 	}
+	else if (keycode == 76)
+	{
+		H = H * SCALE;
+		while (H >= 0)
+		{
+			printf("h = %d\n", H);
+			// mlx_clear_window(param[0], param[1]);
+			sleep(1);
+			iso(param[2]);
+			draw_map(param[0], param[1], param[2]);
+			H--;
+		}
+		ANIM_FLAG = 1;
+	}
 	return (0);
 }
 
@@ -338,17 +375,16 @@ int			main(int argc, char **argv)
 	void	*win_ptr;
 	int		fd;
 	t_map	*map;
-	void	*param[3];
+	void	*param[4];
+	
 
 	if (argc != 2)
 		return (ft_report("usage: ./fdf [input_file]"));
 	if ((fd = open(argv[1], O_RDONLY)) == -1)
 		return (ft_report("Cannot open map.\n"));
 	map = NULL;
-	if (read_map(fd, &map) == -1)
+	if ((H = read_map(fd, &map)) == -1)
 		return (ft_report("read_map error"));
-
-	iso(map);
 
 	mlx_ptr = mlx_init();
 	win_ptr = mlx_new_window(mlx_ptr, 1300, 1300, "test");
@@ -356,9 +392,7 @@ int			main(int argc, char **argv)
 	param[1] = win_ptr;
 	param[2] = map;
 
-	// mlx_key_hook(win_ptr, deal_key, (void *)(mlx_ptr, win_ptr, map));
 	mlx_hook(win_ptr, 2, 0, key_press, param);
-	draw_map(mlx_ptr, win_ptr, map);
 
 
 	// mlx_string_put (mlx_ptr, win_ptr, 0, 0, 0xFFFFFF, "TEST");
