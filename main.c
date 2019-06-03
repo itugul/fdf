@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ehaggon <ehaggon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/10 12:24:14 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/05/31 18:13:41 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/03 14:01:02 by ehaggon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -300,7 +300,7 @@ static void	draw_map(void *mlx_ptr,void *win_ptr, t_map *map)
 		}
 		else
 			draw_DDA(mlx_ptr, win_ptr, map, map->up);
-		
+
 		map = map->next;
 	}
 	// draw_DDA(mlx_ptr, win_ptr, map, map);
@@ -366,6 +366,8 @@ int key_press(int keycode, void **param)
 		}
 		ANIM_FLAG = 1;
 	}
+	else if (keycode == 53)
+		exit(0);
 	return (0);
 }
 
@@ -376,7 +378,7 @@ int			main(int argc, char **argv)
 	int		fd;
 	t_map	*map;
 	void	*param[4];
-	
+
 
 	if (argc != 2)
 		return (ft_report("usage: ./fdf [input_file]"));
