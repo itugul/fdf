@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/10 12:24:14 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/04 19:37:32 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/06 19:23:42 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,10 @@
 #include <math.h>
 #include <stdio.h>
 
-int SCALE = 15;
-int SCALE_OLD = 15;
-int INDENT_X = 300;
-int INDENT_Y = 300;
+float SCALE = 5;
+float SCALE_OLD = 5;
+int INDENT_X = 500;
+int INDENT_Y = 900;
 int	ANIM_FLAG = 0;
 int	H = 0;
 int	H_A = 0;
@@ -30,9 +30,9 @@ void				push(t_map **head, int *data)
 	if (!(tmp = (t_map*)malloc(sizeof(t_map))))
 		return ;
 	tmp->line_num = data[0];
-	tmp->x = data[0];
-	tmp->y = data[1];
-	tmp->z = data[2];
+	// tmp->x = data[0];
+	// tmp->y = data[1];
+	// tmp->z = data[2];
 	tmp->anim_x = 0;
 	tmp->anim_y = 0;
 	tmp->anim_z = 0;
@@ -58,45 +58,35 @@ t_map				*getNth(t_map *head, int n)
 	return (head);
 }
 
-// int			deal_key(int key, void *param)
-// {
-// 	if (key == 78)
-// 	{
-// 		ft_putchar('-');
-// 		SCALE--;
-// 		printf("%d\n", SCALE);
-// 		// draw_map(param[0], param[1], param[2]);
-// 	}
-// 	else if (key == 69)
-// 	{
-// 		ft_putchar('+');
-// 		SCALE++;
-// 		printf("%d\n", SCALE);
-// 	}
-// 	return (0);
-// }
+double percent(int start, int end, int current)
+{
+    double placement;
+    double distance;
+
+    placement = current - start;
+    distance = end - start;
+    return ((distance == 0) ? 1.0 : (placement / distance));
+}
 
 int get_light(int start, int end, double percentage)
 {
     return ((int)((1 - percentage) * start + percentage * end));
 }
 
-static int	gradient(int i, int step, t_map *start, t_map *end)
+static void	gradient(t_map *map)
 {
-	double percentage;
-	int red;
-    int green;
-    int blue;
+	double 	percentage;
+	int		red;
+	int		green;
+	int		blue;
 
-	if (start->color == end->color)
-        return (start->color);
+	while (map->next != NULL)
+	{
+		percentage = percent(-(H / SCALE), H / SCALE, map->anim_z);
 
-	percentage = i / step;
-
-    red = get_light((start->color >> 16) & 0xFF, (end->color >> 16) & 0xFF, percentage);
-    green = get_light((start->color >> 8) & 0xFF, (end->color >> 8) & 0xFF, percentage);
-    blue = get_light(start->color & 0xFF, end->color & 0xFF, percentage);
-    return ((red << 16) | (green << 8) | blue);
+		map->color = 16777215 * percentage;
+		map = map->next;
+	}
 }
 
 void		draw_DDA(void *mlx_ptr, void *win_ptr, t_map *start, t_map *end)
@@ -107,37 +97,24 @@ void		draw_DDA(void *mlx_ptr, void *win_ptr, t_map *start, t_map *end)
 	float	y[3];
 	int		color;
 
-	// if (ANIM_FLAG == 1)
-	// {
-	// 	x[0] = (start->y * SCALE) + INDENT_Y;
-	// 	x[1] = (end->y * SCALE) + INDENT_Y;
-	// 	y[0] = (start->x * SCALE) + INDENT_X + 500;
-	// 	y[1] = (end->x * SCALE) + INDENT_X + 500;
-	// }
-	// else
-	// {
-		x[0] = start->anim_y + INDENT_Y;
-		x[1] = end->anim_y + INDENT_Y;
-		y[0] = start->anim_x + INDENT_X + 500;
-		y[1] = end->anim_x + INDENT_X + 500;
-	// }
+
+	x[0] = start->anim_y + INDENT_Y;
+	x[1] = end->anim_y + INDENT_Y;
+	y[0] = start->anim_x + INDENT_X;
+	y[1] = end->anim_x + INDENT_X;
+
 
 	step = (ft_abs(x[1] - x[0])) >= (ft_abs(y[1] - y[0])) ?
 		(ft_abs(x[1] - x[0])) : (ft_abs(y[1] - y[0]));
-	// x[2] = ft_abs(x[1] - x[0]) / step;
-	// y[2] = ft_abs(y[1] - y[0]) / step;
 	x[2] = (x[1] - x[0]) / step;
 	y[2] = (y[1] - y[0]) / step;
 	i = 1;
 	// printf("stage = %d/%d\nx[0] = %f\ny[0] = %f\nx[1] = %f\ny[1] = %f\nx[2] = %f\ny[2] = %f\n", i, step, x[0], y[0], x[1], y[1], x[2], y[2]);
 	while (i <= step)
 	{
-		color = gradient(i, step, start, end);
-		mlx_pixel_put(mlx_ptr, win_ptr, x[0], y[0], color);
-		// if (x[0] < x[1])
-		// 	x[0] = x[0] + x[2] > x[1] ? x[1] : x[0] + x[2];
-		// if (y[0] < y[1])
-		// 	y[0] = y[0] + y[2] > y[1] ? y[1] : y[0] + y[2];
+		// color = gradient(x[0], y[0], start, end);
+		// printf("color == %d\n", color);
+		mlx_pixel_put(mlx_ptr, win_ptr, x[0], y[0], end->color);
 		x[0] = x[0] + x[2];
 		y[0] = y[0] + y[2];
 		i++;
@@ -218,76 +195,96 @@ int			read_map(int fd, t_map **map)
 
 	t = 0;
 	h = 0;
-	// printf("BUFF_SIZE = [%d]\n", BUFF_SIZE);
 	while ((t = get_next_line(fd, &line)) > 0)
 	{
-		// printf("1)line = [%s]\n", line);
 		tmp = line;
 		n[0] = n[1];
 		n[1] = ft_num_words(line, ' ');
-		// printf("num words = %d\n", n[1]);
 		if (n[0] != 0 && n[1] != n[0])
 			return (ft_report("not valid map"));
 		while (*line != '\0' && ((d = ft_pars(&line, " ,", &wrd))!= -1) && (xyz[1] < n[1]))
 		{
-			// printf("d = [%c]\n", d);
-			// printf("wrd = [%s]\n", wrd);
-			// printf("line = [%s]\n", line);
-
 			if (d == ',')
-			{
 				(*map)->color = hex_to_int(wrd);
-				// printf("1)map[%d][%d] = %d, color = %d\n", (*map)->x, (*map)->y, (*map)->z, (*map)->color);
-			}
 			else
 			{
 				xyz[2] = ft_atoi(wrd);
 				h = h < ft_abs(xyz[2]) ? ft_abs(xyz[2]) : h;
 				push(map, xyz);
 				if (xyz[0] > 0)
-				{
 					(*map)->up = getNth(*map, n[1]);
-					// if ((*map)->up)
-					// 	printf("(*map)->up->x == %d | (*map)->up->y == %d\n", (*map)->up->x, (*map)->up->y);
-				}
-				// printf("2)map[%d][%d] = %d\n", (*map)->x, (*map)->y, (*map)->z);
 				xyz[1]++;
 			}
 		}
 		xyz[0]++;
 		xyz[1] = 0;
-		// ft_putendl("-----------------------------");
-		// printf("t = [%d]\n", t);
-		// line -= --t;
-		// printf("2)line = [%s]\n", line);
 		ft_strdel(&tmp);
 	}
-	// printf("matrix[%d][%d]\n", (*map)->x, (*map)->y);
 	ft_strdel(&wrd);
 	if (t == -1)
 		return (ft_report("read error"));
 	return (h);
 }
 
+static void	x_rot(t_map *map, int sig)
+{
+	float	y;
+	float	z;
+
+	while (map != NULL)
+	{
+		y = map->anim_y;
+		z = map->anim_z;
+		map->anim_y = (y * cos(0.1 * sig)) + (z * sin(0.1 * sig));
+		map->anim_z = (-y * sin(0.1 * sig)) + (z * cos(0.1 * sig));
+
+		map = map->next;
+	}
+}
+
+static void	y_rot(t_map *map, int sig)
+{
+	float	x;
+	float	z;
+
+	while (map != NULL)
+	{
+		x = map->anim_x;
+		z = map->anim_z;
+		map->anim_x = (x * cos(0.1 * sig)) + (z * sin(0.1 * sig));
+		map->anim_z = (-x * sin(0.1 * sig)) + (z * cos(0.1 * sig));
+
+		map = map->next;
+	}
+}
+
+static void	z_rot(t_map *map, int sig)
+{
+	float	y;
+	float	x;
+
+	while (map != NULL)
+	{
+		y = map->anim_y;
+		x = map->anim_x;
+		map->anim_x = (x * cos(0.1 * sig)) - (y * sin(0.1 * sig));
+		map->anim_y = (x * sin(0.1 * sig)) + (y * cos(0.1 * sig));
+
+		map = map->next;
+	}
+}
+
 static void	iso(t_map *tmp)
 {
-
-
-	if (ANIM_FLAG == 0)
-		tmp->anim_z = tmp->fin_z;
 	while (tmp != NULL)
 	{
-
+		// 0.523599
 		tmp->anim_x = ((tmp->fin_x * SCALE) - (tmp->fin_y * SCALE)) * cos(0.523599);
+		tmp->anim_y = -tmp->anim_z + ((tmp->fin_x * SCALE) + (tmp->fin_y * SCALE)) * sin(0.523599);
 		if (ANIM_FLAG == 0)
-		{
 			tmp->anim_z = SCALE > SCALE_OLD ? tmp->anim_z + tmp->anim_z / (SCALE - 1) : tmp->anim_z - tmp->anim_z / (SCALE - 1);
-			tmp->anim_y = -tmp->anim_z + ((tmp->fin_x * SCALE) + (tmp->fin_y * SCALE)) * sin(0.523599);
-		}
 		else
 		{
-			tmp->anim_y = -tmp->anim_z + ((tmp->fin_x * SCALE) + (tmp->fin_y * SCALE)) * sin(0.523599);
-
 			tmp->anim_z != (tmp->fin_z * SCALE) && tmp->fin_z > 0 ? tmp->anim_z++ : 0;
 			tmp->anim_z != (tmp->fin_z * SCALE) && tmp->fin_z < 0 ? tmp->anim_z-- : 0;
 		}
@@ -301,14 +298,10 @@ static void	draw_map(void *mlx_ptr,void *win_ptr, t_map *map)
 	{
 		if (map->line_num == map->next->line_num)
 		{
-			// printf("A%d)x[0] = %f | y[0] = %f\n     x[1] = %f | y[1] = %f\n", i, x[0], y[0], x[1], y[1]);
 			draw_DDA(mlx_ptr, win_ptr, map, map->next);
 			if (map->up)
 			{
-				// ft_putendl("---------------");
-				// printf("B%d)x[0] = %f | y[0] = %f\n*****x[1] = %f | y[1] = %f\n", i, x[0], y[0], x[1], y[1]);
 				draw_DDA(mlx_ptr, win_ptr, map, map->up);
-				// ft_putendl("---------------");
 			}
 		}
 		else
@@ -316,32 +309,52 @@ static void	draw_map(void *mlx_ptr,void *win_ptr, t_map *map)
 		
 		map = map->next;
 	}
-	// draw_DDA(mlx_ptr, win_ptr, map, map);
+}
+
+int	animacion(void **param)
+{
+
+	if (H_A <= H || H_A <= 10)
+	{
+		// printf("h = %d\n", H_A);
+		// sleep(1);
+		ANIM_FLAG = 1;
+		iso(param[2]);
+		z_rot(param[2], -10);
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
+		H_A++;
+	}
+	else
+		ANIM_FLAG = 0;
+
+	return (0);
 }
 
 int key_press(int keycode, void **param)
 {
-	if (keycode == 78 && SCALE > 3)
+	if (keycode == 78 && SCALE > 5)
 	{
 		SCALE_OLD = SCALE;
 		SCALE--;
-		mlx_clear_window(param[0], param[1]);
 		iso(param[2]);
+		z_rot(param[2], -10);
+		mlx_clear_window(param[0], param[1]);
 		draw_map(param[0], param[1], param[2]);
 	}
 	else if (keycode == 69)
 	{
 		SCALE_OLD = SCALE;
 		SCALE++;
-		mlx_clear_window(param[0], param[1]);
 		iso(param[2]);
+		z_rot(param[2], -10);
+		mlx_clear_window(param[0], param[1]);
 		draw_map(param[0], param[1], param[2]);
 	}
 	else if (keycode == 87)
 	{
-		SCALE = 15;
+		z_rot(param[2], -10);
 		mlx_clear_window(param[0], param[1]);
-		// iso(param[2]);
 		draw_map(param[0], param[1], param[2]);
 	}
 	else if (keycode == 126)
@@ -368,33 +381,81 @@ int key_press(int keycode, void **param)
 		mlx_clear_window(param[0], param[1]);
 		draw_map(param[0], param[1], param[2]);
 	}
-	else if (keycode == 76)
+	else if (keycode == 88 && ANIM_FLAG == 0)
 	{
-		if (H_A <= H)
-		{
-			printf("h = %d\n", H_A);
-			mlx_clear_window(param[0], param[1]);
-			// sleep(1);
-			ANIM_FLAG = 1;
-			iso(param[2]);
-			draw_map(param[0], param[1], param[2]);
-			ANIM_FLAG = 0;
-			H_A++;
-		}
-		// ANIM_FLAG = 1;
+		x_rot(param[2], 1);
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
+	}
+	else if (keycode == 86 && ANIM_FLAG == 0)
+	{
+		x_rot(param[2], -1);
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
+	}
+	else if (keycode == 91 && ANIM_FLAG == 0)
+	{
+		y_rot(param[2], 1);
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
+	}
+	else if (keycode == 84 && ANIM_FLAG == 0)
+	{
+		y_rot(param[2], -1);
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
+	}
+	else if (keycode == 89 && ANIM_FLAG == 0)
+	{
+		z_rot(param[2], 1);
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
+	}
+	else if (keycode == 83 && ANIM_FLAG == 0)
+	{
+		z_rot(param[2], -1);
+		mlx_clear_window(param[0], param[1]);
+		draw_map(param[0], param[1], param[2]);
 	}
 	else if (keycode == 53)
 		exit(0);
 	return (0);
 }
 
+void	scaling(t_map *tmp)
+{
+	int	h[2];
+	int	w[2];
+	int	s;
+	float	xy[2];
+
+	h[0] = 0;
+	h[1] = 0;
+	w[0] = 0;
+	w[1] = 0;
+	while (tmp != NULL)
+	{
+
+		xy[0] = ((tmp->fin_x * SCALE) - (tmp->fin_y * SCALE)) * cos(0.523599);
+		xy[1] = -(tmp->fin_z * SCALE) + ((tmp->fin_x * SCALE) + (tmp->fin_y * SCALE)) * sin(0.523599);
+		h[0] = h[0] > xy[0] ? xy[0] : h[0];
+		h[1] = h[1] < xy[0] ? xy[0] : h[1];
+		w[0] = w[0] < xy[1] ? xy[1] : w[0];
+		w[1] = w[1] < xy[1] ? xy[1] : w[1];
+		tmp = tmp->next;
+	}
+	s = h[1] - h[0] > w[1] - w[0] ? h[1] - h[0] : w[1] - w[0];
+	printf("s == %d\n", s);
+	SCALE = 1300 / s >= 1 ? SCALE * (1300 / s) : SCALE;
+}
+
+
 int			main(int argc, char **argv)
 {
-	void	*mlx_ptr;
-	void	*win_ptr;
 	int		fd;
 	t_map	*map;
 	void	*param[3];
+	int		i = 0;
 	
 
 	if (argc != 2)
@@ -404,30 +465,16 @@ int			main(int argc, char **argv)
 	map = NULL;
 	if ((H = read_map(fd, &map)) == -1)
 		return (ft_report("read_map error"));
-
+	scaling(map);
 	H = H * SCALE;
-	mlx_ptr = mlx_init();
-	win_ptr = mlx_new_window(mlx_ptr, 1300, 1300, "test");
-	param[0] = mlx_ptr;
-	param[1] = win_ptr;
+	gradient(map);
+	param[0] = mlx_init();
+	param[1] = mlx_new_window(param[0], 2500, 1300, "test");
 	param[2] = map;
 
-	// H = H * SCALE;
-	// while (H >= 0)
-	// {
-	// 	printf("h = %d\n", H);
-	// 	mlx_clear_window(mlx_ptr, win_ptr);
-	// 	sleep(1);
-	// 	iso(map);
-	// 	draw_map(mlx_ptr, win_ptr, map);
-	// 	H--;
-	// }
-	// ANIM_FLAG = 1;
-
-	mlx_hook(win_ptr, 2, 0, key_press, param);
+	mlx_loop_hook(param[0], animacion, param);
+	mlx_hook(param[1], 2, 0, key_press, param);
 
 
-	// mlx_string_put (mlx_ptr, win_ptr, 0, 0, 0xFFFFFF, "TEST");
-
-	mlx_loop(mlx_ptr);
+	mlx_loop(param[0]);
 }
