@@ -6,7 +6,7 @@
 /*   By: ehaggon <ehaggon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/10 12:24:14 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/18 16:11:26 by ehaggon          ###   ########.fr       */
+/*   Updated: 2019/06/18 16:40:39 by ehaggon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -311,7 +311,7 @@ int	animacion(void **param)
 
 int	key_press(int keycode, void **param)
 {
-	if (keycode == 78 && scale > 5)
+	if (keycode == 78 && scale > 5 && anim_flag == 0)
 	{
 		scale_old = scale;
 		scale--;
@@ -320,7 +320,7 @@ int	key_press(int keycode, void **param)
 		mlx_clear_window(param[0], param[1]);
 		draw_map(param[0], param[1], param[2]);
 	}
-	else if (keycode == 69)
+	else if (keycode == 69 && anim_flag == 0)
 	{
 		scale_old = scale;
 		scale++;
@@ -329,31 +329,31 @@ int	key_press(int keycode, void **param)
 		mlx_clear_window(param[0], param[1]);
 		draw_map(param[0], param[1], param[2]);
 	}
-	else if (keycode == 87)
+	else if (keycode == 87 && anim_flag == 0)
 	{
 		z_rot(param[2], -10);
 		mlx_clear_window(param[0], param[1]);
 		draw_map(param[0], param[1], param[2]);
 	}
-	else if (keycode == 126)
+	else if (keycode == 126 && anim_flag == 0)
 	{
 		indent_x += 10;
 		mlx_clear_window(param[0], param[1]);
 		draw_map(param[0], param[1], param[2]);
 	}
-	else if (keycode == 125)
+	else if (keycode == 125 && anim_flag == 0)
 	{
 		indent_x -= 10;
 		mlx_clear_window(param[0], param[1]);
 		draw_map(param[0], param[1], param[2]);
 	}
-	else if (keycode == 123)
+	else if (keycode == 123 && anim_flag == 0)
 	{
 		indent_y += 10;
 		mlx_clear_window(param[0], param[1]);
 		draw_map(param[0], param[1], param[2]);
 	}
-	else if (keycode == 124)
+	else if (keycode == 124 && anim_flag == 0)
 	{
 		indent_y -= 10;
 		mlx_clear_window(param[0], param[1]);
