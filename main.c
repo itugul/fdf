@@ -6,22 +6,11 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/25 19:04:25 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/25 19:05:57 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/25 22:55:42 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "mlx.h"
 #include "fdf.h"
-#include <math.h>
-#include <stdio.h>
-
-float	SCALE = 5;
-float	SCALE_OLD = 5;
-int		INDENT_X = 500;
-int		INDENT_Y = 900;
-int		ANIM_FLAG = 0;
-int		H = 0;
-int		H_A = 0;
 
 void				push(t_map **head, int *data)
 {
@@ -70,14 +59,14 @@ int			get_light(int start, int end, double percentage)
 	return ((int)((1 - percentage) * start + percentage * end));
 }
 
-int			get_color(t_map start, t_map end)
+int			get_color(t_map start, t_glob *glob, t_map end)
 {
 	int		red;
 	int		green;
 	int		blue;
 	double	percentage;
 
-	percentage = percent(-H, H, start.fin_z);
+	percentage = percent(-glob->h, glob->h, start.fin_z);
 	red = get_light((start.color >> 16) & 0xFF,
 		(end.color >> 16) & 0xFF, percentage);
 	green = get_light((start.color >> 8) & 0xFF,
@@ -86,7 +75,7 @@ int			get_color(t_map start, t_map end)
 	return ((red << 16) | (green << 8) | blue);
 }
 
-static void	color_map(t_map *map)
+void	color_map(t_map *map, t_glob *glob)
 {
 	float	percentage;
 	int		red;
@@ -95,13 +84,14 @@ static void	color_map(t_map *map)
 
 	while (map->next != NULL)
 	{
-		percentage = percent(-H, H, map->fin_z);
-		map->color = 16777215 * percentage;
+		percentage = percent(-glob->h, glob->h, map->fin_z);
+		if (map->color == DEF_COLOR)
+			map->color = 16777215 * percentage;
 		map = map->next;
 	}
 }
 
-void		draw_dda(void *mlx_ptr, void *win_ptr, t_map *start, t_map *end)
+void		draw_dda(void **param, t_map *map, t_map *end)
 {
 	int		step;
 	int		i;
@@ -109,10 +99,10 @@ void		draw_dda(void *mlx_ptr, void *win_ptr, t_map *start, t_map *end)
 	float	y[3];
 	int		color;
 
-	x[0] = start->anim_y + INDENT_Y;
-	x[1] = end->anim_y + INDENT_Y;
-	y[0] = start->anim_x + INDENT_X;
-	y[1] = end->anim_x + INDENT_X;
+	x[0] = map->anim_y + ((t_glob **)param)[3]->indent_y;
+	x[1] = end->anim_y + ((t_glob **)param)[3]->indent_y;
+	y[0] = map->anim_x + ((t_glob **)param)[3]->indent_x;
+	y[1] = end->anim_x + ((t_glob **)param)[3]->indent_x;
 	step = (ft_abs(x[1] - x[0])) >= (ft_abs(y[1] - y[0])) ?
 		(ft_abs(x[1] - x[0])) : (ft_abs(y[1] - y[0]));
 	x[2] = (x[1] - x[0]) / step;
@@ -120,8 +110,8 @@ void		draw_dda(void *mlx_ptr, void *win_ptr, t_map *start, t_map *end)
 	i = 0;
 	while (i < step)
 	{
-		color = get_color(*start, *end);
-		mlx_pixel_put(mlx_ptr, win_ptr, x[0], y[0], color);
+		color = get_color(*map, param[3], *end);
+		mlx_pixel_put(param[0], param[1], x[0], y[0], color);
 		x[0] = x[0] + x[2];
 		y[0] = y[0] + y[2];
 		i++;
@@ -203,7 +193,7 @@ int			read_map(int fd, t_map **map)
 	return (h);
 }
 
-static void	x_rot(t_map *map, int sig)
+void	x_rot(t_map *map, int sig)
 {
 	float	y;
 	float	z;
@@ -218,7 +208,7 @@ static void	x_rot(t_map *map, int sig)
 	}
 }
 
-static void	y_rot(t_map *map, int sig)
+void	y_rot(t_map *map, int sig)
 {
 	float	x;
 	float	z;
@@ -233,7 +223,7 @@ static void	y_rot(t_map *map, int sig)
 	}
 }
 
-static void	z_rot(t_map *map, int sig)
+void	z_rot(t_map *map, int sig)
 {
 	float	y;
 	float	x;
@@ -248,147 +238,68 @@ static void	z_rot(t_map *map, int sig)
 	}
 }
 
-static void	iso(t_map *tmp)
+void	iso(t_map *tmp, t_glob	*glob)
 {
 	while (tmp != NULL)
 	{
-		if (ANIM_FLAG == 0)
-			tmp->anim_z = SCALE > SCALE_OLD ?
-				tmp->anim_z + tmp->anim_z / SCALE_OLD :
-					tmp->anim_z - tmp->anim_z / SCALE_OLD;
+		if (glob->anim_flag == 0)
+			tmp->anim_z = glob->scale > glob->scale_old ?
+				tmp->anim_z + tmp->anim_z / glob->scale_old :
+					tmp->anim_z - tmp->anim_z / glob->scale_old;
 		else
 		{
-			tmp->anim_z != (tmp->fin_z * SCALE) &&
+			tmp->anim_z != (tmp->fin_z * glob->scale) &&
 				tmp->fin_z > 0 ? tmp->anim_z++ : 0;
-			tmp->anim_z != (tmp->fin_z * SCALE) &&
+			tmp->anim_z != (tmp->fin_z * glob->scale) &&
 				tmp->fin_z < 0 ? tmp->anim_z-- : 0;
 		}
-		tmp->anim_x = ((tmp->fin_x * SCALE) -
-			(tmp->fin_y * SCALE)) * cos(0.523599);
-		tmp->anim_y = -tmp->anim_z + ((tmp->fin_x * SCALE) +
-			(tmp->fin_y * SCALE)) * sin(0.523599);
+		tmp->anim_x = ((tmp->fin_x * glob->scale) -
+			(tmp->fin_y * glob->scale)) * cos(0.523599);
+		tmp->anim_y = -tmp->anim_z + ((tmp->fin_x * glob->scale) +
+			(tmp->fin_y * glob->scale)) * sin(0.523599);
 		tmp = tmp->next;
 	}
 }
 
-static void	draw_map(void *mlx_ptr, void *win_ptr, t_map *map)
+void	draw_map(void **param)
 {
+	t_map	*map;
+
+	map = param[2];
 	while (map->next != NULL)
 	{
 		if (map->line_num == map->next->line_num)
 		{
-			draw_dda(mlx_ptr, win_ptr, map, map->next);
+			draw_dda(param, map, map->next);
 			if (map->up)
-				draw_dda(mlx_ptr, win_ptr, map, map->up);
+				draw_dda(param, map, map->up);
 		}
 		else
-			draw_dda(mlx_ptr, win_ptr, map, map->up);
+			draw_dda(param, map, map->up);
 		map = map->next;
 	}
 }
 
 int	animacion(void **param)
 {
-	if (H_A <= H)
+	t_glob	*glob;
+
+	glob = param[3];
+	if (glob->h_a <= glob->h)
 	{
-		ANIM_FLAG = 1;
-		iso(param[2]);
+		glob->anim_flag = 1;
+		iso(param[2], param[3]);
 		z_rot(param[2], -10);
 		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-		H_A++;
+		draw_map(param);
+		glob->h_a++;
 	}
 	else
-		ANIM_FLAG = 0;
+		glob->anim_flag = 0;
 	return (0);
 }
 
-int	key_press(int keycode, void **param)
-{
-	if (keycode == 78 && SCALE > 5)
-	{
-		SCALE_OLD = SCALE;
-		SCALE--;
-		iso(param[2]);
-		z_rot(param[2], -10);
-		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-	}
-	else if (keycode == 69)
-	{
-		SCALE_OLD = SCALE;
-		SCALE++;
-		iso(param[2]);
-		z_rot(param[2], -10);
-		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-	}
-	else if (keycode == 126)
-	{
-		INDENT_X += 10;
-		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-	}
-	else if (keycode == 125)
-	{
-		INDENT_X -= 10;
-		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-	}
-	else if (keycode == 123)
-	{
-		INDENT_Y += 10;
-		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-	}
-	else if (keycode == 124)
-	{
-		INDENT_Y -= 10;
-		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-	}
-	else if (keycode == 88 && ANIM_FLAG == 0)
-	{
-		x_rot(param[2], 1);
-		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-	}
-	else if (keycode == 86 && ANIM_FLAG == 0)
-	{
-		x_rot(param[2], -1);
-		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-	}
-	else if (keycode == 91 && ANIM_FLAG == 0)
-	{
-		y_rot(param[2], 1);
-		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-	}
-	else if (keycode == 84 && ANIM_FLAG == 0)
-	{
-		y_rot(param[2], -1);
-		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-	}
-	else if (keycode == 89 && ANIM_FLAG == 0)
-	{
-		z_rot(param[2], 1);
-		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-	}
-	else if (keycode == 83 && ANIM_FLAG == 0)
-	{
-		z_rot(param[2], -1);
-		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-	}
-	else if (keycode == 53)
-		exit(0);
-	return (0);
-}
-
-void	scaling(t_map *tmp)
+void	scaling(t_map *tmp, t_glob *glob)
 {
 	int		h[2];
 	int		w[2];
@@ -401,9 +312,9 @@ void	scaling(t_map *tmp)
 	w[1] = 0;
 	while (tmp != NULL)
 	{
-		xy[0] = ((tmp->fin_x * SCALE) - (tmp->fin_y * SCALE)) * cos(0.523599);
-		xy[1] = -(tmp->fin_z * SCALE) + ((tmp->fin_x * SCALE) +
-			(tmp->fin_y * SCALE)) * sin(0.523599);
+		xy[0] = ((tmp->fin_x * glob->scale) - (tmp->fin_y * glob->scale)) * cos(0.523599);
+		xy[1] = -(tmp->fin_z * glob->scale) + ((tmp->fin_x * glob->scale) +
+			(tmp->fin_y * glob->scale)) * sin(0.523599);
 		h[0] = h[0] > xy[0] ? xy[0] : h[0];
 		h[1] = h[1] < xy[0] ? xy[0] : h[1];
 		w[0] = w[0] < xy[1] ? xy[1] : w[0];
@@ -412,30 +323,39 @@ void	scaling(t_map *tmp)
 	}
 	s = h[1] - h[0] > w[1] - w[0] ? h[1] - h[0] : w[1] - w[0];
 	printf("s == %d\n", s);
-	SCALE = 1300 / s >= 1 ? SCALE * (1300 / s) : SCALE;
+	glob->scale = 1300 / s >= 1 ? glob->scale * (1300 / s) : glob->scale;
 }
 
 int			main(int argc, char **argv)
 {
 	int		fd;
 	t_map	*map;
-	void	*param[3];
+	t_glob	glob;
+	void	*param[4];
 	int		i;
 
+	glob.scale = 5.0;
+	glob.scale_old = 5.0;
+	glob.indent_x = 500;
+	glob.indent_y = 900;
+	glob.anim_flag = 0;
+	glob.h = 0;
+	glob.h_a = 0;
 	i = 0;
 	if (argc != 2)
 		return (ft_report("usage: ./fdf [input_file]"));
 	if ((fd = open(argv[1], O_RDONLY)) == -1)
 		return (ft_report("Cannot open map.\n"));
 	map = NULL;
-	if ((H = read_map(fd, &map)) == -1)
+	if ((glob.h = read_map(fd, &map)) == -1)
 		return (ft_report("read_map error"));
-	scaling(map);
-	color_map(map);
-	H = H * SCALE;
+	scaling(map, &glob);
+	color_map(map, &glob);
+	glob.h = glob.h * glob.scale;
 	param[0] = mlx_init();
 	param[1] = mlx_new_window(param[0], 2500, 1300, "test");
 	param[2] = map;
+	param[3] = &glob;
 	mlx_loop_hook(param[0], animacion, param);
 	mlx_hook(param[1], 2, 0, key_press, param);
 	mlx_hook(param[1], 5, 0, key_press, param);
