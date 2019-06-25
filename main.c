@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/25 19:04:25 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/26 00:15:31 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/26 00:20:47 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,6 +171,8 @@ void		insert_var(int *xyzh, int *n)
 {
 	n[0] = 0;
 	n[1] = 0;
+	n[2] = 0;
+	n[3] = 0;
 	xyzh[0] = 0;
 	xyzh[1] = 0;
 	xyzh[2] = 0;
@@ -181,31 +183,28 @@ int			read_map(int fd, t_map **map)
 {
 	char	*line;
 	char	*tmp;
-	int		t;
 	int		*xyzh;
-	int		n[2];
-	int		h;
+	int		nth[4];
 
 	xyzh = (int *)malloc(sizeof(int) * 4);
-	insert_var(xyzh, n);
-	t = 0;
-	while ((t = get_next_line(fd, &line)) > 0)
+	insert_var(xyzh, nth);
+	while ((nth[2] = get_next_line(fd, &line)) > 0)
 	{
 		tmp = line;
-		n[0] = n[1];
-		n[1] = ft_num_words(line, ' ');
-		if (n[0] != 0 && n[1] != n[0])
+		nth[0] = nth[1];
+		nth[1] = ft_num_words(line, ' ');
+		if (nth[0] != 0 && nth[1] != nth[0])
 			return (ft_report("not valid map"));
-		pars_line(map, &line, xyzh, n);
+		pars_line(map, &line, xyzh, nth);
 		xyzh[0]++;
 		xyzh[1] = 0;
 		ft_strdel(&tmp);
 	}
-	h = xyzh[3];
+	nth[3] = xyzh[3];
 	free(xyzh);
-	if (t == -1)
+	if (nth[2] == -1)
 		return (ft_report("read error"));
-	return (h);
+	return (nth[3]);
 }
 
 void	x_rot(t_map *map, int sig)
