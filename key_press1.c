@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/25 19:09:31 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/25 22:56:49 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/26 00:43:56 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ int			key_press(int keycode, void **param)
 		key_press88(param);
 	else
 		key_press2(keycode, param);
-	return(0);
+	return (0);
 }
 
 void		key_press2(int keycode, void **param)
