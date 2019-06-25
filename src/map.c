@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/26 00:32:02 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/26 00:45:05 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/26 02:29:42 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,9 @@ void		push(t_map **head, int *data)
 	tmp->fin_x = data[0];
 	tmp->fin_y = data[1];
 	tmp->fin_z = data[2];
+	tmp->x = data[0];
+	tmp->y = data[1];
+	tmp->z = data[2];
 	tmp->color = DEF_COLOR;
 	tmp->next = (*head);
 	tmp->up = NULL;

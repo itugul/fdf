@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/26 00:26:48 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/26 00:43:45 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/26 02:31:41 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ void		insert_glob(t_glob *glob)
 	glob->anim_flag = 0;
 	glob->h = 0;
 	glob->h_a = 0;
+	glob->iso_flag = 1;
 }
 
 void		insert_param(void **param)

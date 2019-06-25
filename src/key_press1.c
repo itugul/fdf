@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/25 19:09:31 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/26 00:43:56 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/26 02:05:11 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,8 @@ void		key_press2(int keycode, void **param)
 		key_press89(param);
 	else if (keycode == 83 && glob->anim_flag == 0)
 		key_press83(param);
+	else if (keycode == 87)
+		key_press87(param);
 	else if (keycode == 53)
 		exit(0);
 }
@@ -63,7 +65,7 @@ void		key_press78(void **param)
 	glob->scale_old = glob->scale;
 	glob->scale--;
 	iso(param[2], param[3]);
-	z_rot(param[2], -10);
+	// z_rot(param[2], -10);
 	mlx_clear_window(param[0], param[1]);
 	draw_map(param);
 }
@@ -76,7 +78,7 @@ void		key_press69(void **param)
 	glob->scale_old = glob->scale;
 	glob->scale++;
 	iso(param[2], param[3]);
-	z_rot(param[2], -10);
+	// z_rot(param[2], -10);
 	mlx_clear_window(param[0], param[1]);
 	draw_map(param);
 }

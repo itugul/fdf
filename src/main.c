@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/25 19:04:25 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/26 00:36:02 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/26 01:20:59 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,5 @@ int			main(int argc, char **argv)
 	param[3] = &glob;
 	mlx_loop_hook(param[0], animacion, param);
 	mlx_hook(param[1], 2, 0, key_press, param);
-	mlx_hook(param[1], 5, 0, key_press, param);
 	mlx_loop(param[0]);
 }

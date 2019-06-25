@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/26 00:35:36 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/26 00:45:22 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/26 02:45:29 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,20 @@ void		draw_dda(void **param, t_map *map, t_map *end)
 	float	y[3];
 	int		color;
 
-	x[0] = map->anim_y + ((t_glob **)param)[3]->indent_y;
-	x[1] = end->anim_y + ((t_glob **)param)[3]->indent_y;
-	y[0] = map->anim_x + ((t_glob **)param)[3]->indent_x;
-	y[1] = end->anim_x + ((t_glob **)param)[3]->indent_x;
+	if (((t_glob **)param)[3]->iso_flag == 1)
+	{
+		x[0] = map->anim_y + ((t_glob **)param)[3]->indent_y;
+		x[1] = end->anim_y + ((t_glob **)param)[3]->indent_y;
+		y[0] = map->anim_x + ((t_glob **)param)[3]->indent_x;
+		y[1] = end->anim_x + ((t_glob **)param)[3]->indent_x;
+	}
+	else
+	{
+		x[0] = (map->y * ((t_glob **)param)[3]->scale) + ((t_glob **)param)[3]->indent_y;
+		x[1] = (end->y * ((t_glob **)param)[3]->scale) + ((t_glob **)param)[3]->indent_y;
+		y[0] = (map->x * ((t_glob **)param)[3]->scale) + ((t_glob **)param)[3]->indent_x;
+		y[1] = (end->x * ((t_glob **)param)[3]->scale) + ((t_glob **)param)[3]->indent_x;
+	}
 	step = (ft_abs(x[1] - x[0])) >= (ft_abs(y[1] - y[0])) ?
 		(ft_abs(x[1] - x[0])) : (ft_abs(y[1] - y[0]));
 	x[2] = (x[1] - x[0]) / step;
@@ -43,22 +53,34 @@ void		iso(t_map *tmp, t_glob *glob)
 {
 	while (tmp != NULL)
 	{
-		if (glob->anim_flag == 0)
-			tmp->anim_z = glob->scale > glob->scale_old ?
-				tmp->anim_z + tmp->anim_z / glob->scale_old :
-					tmp->anim_z - tmp->anim_z / glob->scale_old;
-		else
-		{
-			tmp->anim_z != (tmp->fin_z * glob->scale) &&
-				tmp->fin_z > 0 ? tmp->anim_z++ : 0;
-			tmp->anim_z != (tmp->fin_z * glob->scale) &&
-				tmp->fin_z < 0 ? tmp->anim_z-- : 0;
-		}
-		tmp->anim_x = ((tmp->fin_x * glob->scale) -
-			(tmp->fin_y * glob->scale)) * cos(0.523599);
-		tmp->anim_y = -tmp->anim_z + ((tmp->fin_x * glob->scale) +
-			(tmp->fin_y * glob->scale)) * sin(0.523599);
-		tmp = tmp->next;
+		// if (glob->iso_flag == 1)
+		// {
+			if (glob->anim_flag == 0)
+			{
+				tmp->anim_z = glob->scale > glob->scale_old ?
+					tmp->anim_z + tmp->anim_z / glob->scale_old :
+						tmp->anim_z - tmp->anim_z / glob->scale_old;
+			}
+			else
+			{
+				tmp->anim_z != (tmp->fin_z * glob->scale) &&
+					tmp->fin_z > 0 ? tmp->anim_z++ : 0;
+				tmp->anim_z != (tmp->fin_z * glob->scale) &&
+					tmp->fin_z < 0 ? tmp->anim_z-- : 0;
+			}
+			tmp->anim_x = ((tmp->fin_x * glob->scale) -
+				(tmp->fin_y * glob->scale)) * cos(0.523599);
+			tmp->anim_y = -tmp->anim_z + ((tmp->fin_x * glob->scale) +
+				(tmp->fin_y * glob->scale)) * sin(0.523599);
+			tmp = tmp->next;
+		// }
+		// else
+		// {
+		// 	tmp->anim_x = tmp->fin_x;
+		// 	tmp->anim_y = tmp->fin_y;
+		// 	tmp->anim_z = tmp->fin_z;
+		// }
+		
 	}
 }
 
@@ -90,7 +112,7 @@ int			animacion(void **param)
 	{
 		glob->anim_flag = 1;
 		iso(param[2], param[3]);
-		z_rot(param[2], -10);
+		// z_rot(param[2], -10);
 		mlx_clear_window(param[0], param[1]);
 		draw_map(param);
 		glob->h_a++;
