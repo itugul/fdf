@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/18 12:30:05 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/25 22:56:35 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/25 23:15:10 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ struct					s_glob
 
 void				key_press78(void **param);
 int					key_press(int keycode, void **param);
-void					key_press2(int keycode, void **param);
+void				key_press2(int keycode, void **param);
 void				key_press78(void **param);
 void				key_press69(void **param);
 void				key_press126(void **param);
@@ -66,20 +66,22 @@ void				key_press89(void **param);
 void				key_press91(void **param);
 void				key_press53(void **param);
 
-t_map				*getNth(t_map *head, int n);
+void				insert_glob(t_glob *glob);
+void				insert_param(void **param);
+t_map				*getnth(t_map *head, int n);
 float				percent(int start, int end, int current);
 int					get_light(int start, int end, double percentage);
 int					get_color(t_map start, t_glob *glob, t_map end);
-void			color_map(t_map *map, t_glob *glob);
+void				color_map(t_map *map, t_glob *glob);
 void				draw_dda(void **param, t_map *map, t_map *end);
 int					hex_to_int(const char *s);
 void				push(t_map **head, int *data);
 int					read_map(int fd, t_map **map);
-void			x_rot(t_map *map, int sig);
-void			y_rot(t_map *map, int sig);
-void			z_rot(t_map *map, int sig);
-void			iso(t_map *tmp, t_glob	*glob);
-void			draw_map(void **param);
+void				x_rot(t_map *map, int sig);
+void				y_rot(t_map *map, int sig);
+void				z_rot(t_map *map, int sig);
+void				iso(t_map *tmp, t_glob	*glob);
+void				draw_map(void **param);
 int					animacion(void **param);
 void				scaling(t_map *tmp, t_glob *glob);
 

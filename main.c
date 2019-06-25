@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/25 19:04:25 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/25 22:55:42 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/25 23:35:49 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void				push(t_map **head, int *data)
 	(*head) = tmp;
 }
 
-t_map				*getNth(t_map *head, int n)
+t_map				*getnth(t_map *head, int n)
 {
 	int				i;
 
@@ -142,12 +142,39 @@ int		hex_to_int(const char *s)
 	return (i);
 }
 
+// int			pars_line(t_map **map, char **line, int *xyz, int *n)
+// {
+// 	char	d;
+// 	char	*wrd;
+// 	int		h;
+
+// 	wrd = ft_strnew(1);
+// 	while (*line != '\0' && ((d = ft_pars(line, " ,", &wrd)) != -1)
+// 		&& (xyz[1] < n[1]))
+// 	{
+// 		if (d == ',')
+// 			(*map)->color = hex_to_int(wrd);
+// 		else
+// 		{
+// 			xyz[2] = ft_atoi(wrd);
+// 			h = h < ft_abs(xyz[2]) ? ft_abs(xyz[2]) : h;
+// 			push(map, xyz);
+// 			if (xyz[0] > 0)
+// 				(*map)->up = getnth(*map, n[1]);
+// 			xyz[1]++;
+// 		}
+// 	}
+// 	ft_strdel(&wrd);
+// 	return (h);
+// }
+
 int			read_map(int fd, t_map **map)
 {
 	char	*line;
 	char	*tmp;
-	char	*wrd;
 	char	d;
+	char	*wrd;
+
 	int		t;
 	int		xyz[3];
 	int		n[2];
@@ -158,7 +185,7 @@ int			read_map(int fd, t_map **map)
 	xyz[0] = 0;
 	xyz[1] = 0;
 	xyz[2] = 0;
-	wrd = ft_strnew(1);
+
 	t = 0;
 	h = 0;
 	while ((t = get_next_line(fd, &line)) > 0)
@@ -168,6 +195,7 @@ int			read_map(int fd, t_map **map)
 		n[1] = ft_num_words(line, ' ');
 		if (n[0] != 0 && n[1] != n[0])
 			return (ft_report("not valid map"));
+		// h = pars_line(map, &line, xyz, n);
 		while (*line != '\0' && ((d = ft_pars(&line, " ,", &wrd)) != -1)
 			&& (xyz[1] < n[1]))
 		{
@@ -179,7 +207,7 @@ int			read_map(int fd, t_map **map)
 				h = h < ft_abs(xyz[2]) ? ft_abs(xyz[2]) : h;
 				push(map, xyz);
 				if (xyz[0] > 0)
-					(*map)->up = getNth(*map, n[1]);
+					(*map)->up = getnth(*map, n[1]);
 				xyz[1]++;
 			}
 		}
@@ -187,7 +215,7 @@ int			read_map(int fd, t_map **map)
 		xyz[1] = 0;
 		ft_strdel(&tmp);
 	}
-	ft_strdel(&wrd);
+
 	if (t == -1)
 		return (ft_report("read error"));
 	return (h);
@@ -238,7 +266,7 @@ void	z_rot(t_map *map, int sig)
 	}
 }
 
-void	iso(t_map *tmp, t_glob	*glob)
+void	iso(t_map *tmp, t_glob *glob)
 {
 	while (tmp != NULL)
 	{
@@ -312,7 +340,8 @@ void	scaling(t_map *tmp, t_glob *glob)
 	w[1] = 0;
 	while (tmp != NULL)
 	{
-		xy[0] = ((tmp->fin_x * glob->scale) - (tmp->fin_y * glob->scale)) * cos(0.523599);
+		xy[0] = ((tmp->fin_x * glob->scale) - (tmp->fin_y * glob->scale)) *
+			cos(0.523599);
 		xy[1] = -(tmp->fin_z * glob->scale) + ((tmp->fin_x * glob->scale) +
 			(tmp->fin_y * glob->scale)) * sin(0.523599);
 		h[0] = h[0] > xy[0] ? xy[0] : h[0];
@@ -326,6 +355,23 @@ void	scaling(t_map *tmp, t_glob *glob)
 	glob->scale = 1300 / s >= 1 ? glob->scale * (1300 / s) : glob->scale;
 }
 
+void		insert_glob(t_glob *glob)
+{
+	glob->scale = 5.0;
+	glob->scale_old = 5.0;
+	glob->indent_x = 500;
+	glob->indent_y = 900;
+	glob->anim_flag = 0;
+	glob->h = 0;
+	glob->h_a = 0;
+}
+
+void		insert_param(void **param)
+{
+	param[0] = mlx_init();
+	param[1] = mlx_new_window(param[0], 2500, 1300, "test");
+}
+
 int			main(int argc, char **argv)
 {
 	int		fd;
@@ -334,13 +380,7 @@ int			main(int argc, char **argv)
 	void	*param[4];
 	int		i;
 
-	glob.scale = 5.0;
-	glob.scale_old = 5.0;
-	glob.indent_x = 500;
-	glob.indent_y = 900;
-	glob.anim_flag = 0;
-	glob.h = 0;
-	glob.h_a = 0;
+	insert_glob(&glob);
 	i = 0;
 	if (argc != 2)
 		return (ft_report("usage: ./fdf [input_file]"));
@@ -352,8 +392,7 @@ int			main(int argc, char **argv)
 	scaling(map, &glob);
 	color_map(map, &glob);
 	glob.h = glob.h * glob.scale;
-	param[0] = mlx_init();
-	param[1] = mlx_new_window(param[0], 2500, 1300, "test");
+	insert_param(param);
 	param[2] = map;
 	param[3] = &glob;
 	mlx_loop_hook(param[0], animacion, param);
