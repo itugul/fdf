@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/04/10 12:24:14 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/25 17:53:18 by fbrekke          ###   ########.fr       */
+/*   Created: 2019/06/25 19:04:25 by fbrekke           #+#    #+#             */
+/*   Updated: 2019/06/25 19:05:57 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,13 @@
 #include <math.h>
 #include <stdio.h>
 
-float SCALE = 5;
-float SCALE_OLD = 5;
-int INDENT_X = 500;
-int INDENT_Y = 900;
-int	ANIM_FLAG = 0;
-int	H = 0;
-int	H_A = 0;
+float	SCALE = 5;
+float	SCALE_OLD = 5;
+int		INDENT_X = 500;
+int		INDENT_Y = 900;
+int		ANIM_FLAG = 0;
+int		H = 0;
+int		H_A = 0;
 
 void				push(t_map **head, int *data)
 {
@@ -65,23 +65,25 @@ float	percent(int start, int end, int current)
 	return (distance == 0 ? 1.0 : (placement / distance));
 }
 
-int	get_light(int start, int end, double percentage)
+int			get_light(int start, int end, double percentage)
 {
 	return ((int)((1 - percentage) * start + percentage * end));
 }
 
-int get_color(t_map start, t_map end)
+int			get_color(t_map start, t_map end)
 {
-    int     red;
-    int     green;
-    int     blue;
-    double  percentage;
+	int		red;
+	int		green;
+	int		blue;
+	double	percentage;
 
 	percentage = percent(-H, H, start.fin_z);
-    red = get_light((start.color >> 16) & 0xFF, (end.color >> 16) & 0xFF, percentage);
-    green = get_light((start.color >> 8) & 0xFF, (end.color >> 8) & 0xFF, percentage);
-    blue = get_light(start.color & 0xFF, end.color & 0xFF, percentage);
-    return ((red << 16) | (green << 8) | blue);
+	red = get_light((start.color >> 16) & 0xFF,
+		(end.color >> 16) & 0xFF, percentage);
+	green = get_light((start.color >> 8) & 0xFF,
+		(end.color >> 8) & 0xFF, percentage);
+	blue = get_light(start.color & 0xFF, end.color & 0xFF, percentage);
+	return ((red << 16) | (green << 8) | blue);
 }
 
 static void	color_map(t_map *map)
@@ -118,7 +120,6 @@ void		draw_dda(void *mlx_ptr, void *win_ptr, t_map *start, t_map *end)
 	i = 0;
 	while (i < step)
 	{
-		// color = end->fin_z > start->fin_z ? end->color : start->color;
 		color = get_color(*start, *end);
 		mlx_pixel_put(mlx_ptr, win_ptr, x[0], y[0], color);
 		x[0] = x[0] + x[2];
@@ -177,7 +178,8 @@ int			read_map(int fd, t_map **map)
 		n[1] = ft_num_words(line, ' ');
 		if (n[0] != 0 && n[1] != n[0])
 			return (ft_report("not valid map"));
-		while (*line != '\0' && ((d = ft_pars(&line, " ,", &wrd)) != -1) && (xyz[1] < n[1]))
+		while (*line != '\0' && ((d = ft_pars(&line, " ,", &wrd)) != -1)
+			&& (xyz[1] < n[1]))
 		{
 			if (d == ',')
 				(*map)->color = hex_to_int(wrd);
@@ -251,14 +253,20 @@ static void	iso(t_map *tmp)
 	while (tmp != NULL)
 	{
 		if (ANIM_FLAG == 0)
-			tmp->anim_z = SCALE > SCALE_OLD ? tmp->anim_z + tmp->anim_z / SCALE_OLD : tmp->anim_z - tmp->anim_z / SCALE_OLD;
+			tmp->anim_z = SCALE > SCALE_OLD ?
+				tmp->anim_z + tmp->anim_z / SCALE_OLD :
+					tmp->anim_z - tmp->anim_z / SCALE_OLD;
 		else
 		{
-			tmp->anim_z != (tmp->fin_z * SCALE) && tmp->fin_z > 0 ? tmp->anim_z++ : 0;
-			tmp->anim_z != (tmp->fin_z * SCALE) && tmp->fin_z < 0 ? tmp->anim_z-- : 0;
+			tmp->anim_z != (tmp->fin_z * SCALE) &&
+				tmp->fin_z > 0 ? tmp->anim_z++ : 0;
+			tmp->anim_z != (tmp->fin_z * SCALE) &&
+				tmp->fin_z < 0 ? tmp->anim_z-- : 0;
 		}
-		tmp->anim_x = ((tmp->fin_x * SCALE) - (tmp->fin_y * SCALE)) * cos(0.523599);
-		tmp->anim_y = -tmp->anim_z + ((tmp->fin_x * SCALE) + (tmp->fin_y * SCALE)) * sin(0.523599);
+		tmp->anim_x = ((tmp->fin_x * SCALE) -
+			(tmp->fin_y * SCALE)) * cos(0.523599);
+		tmp->anim_y = -tmp->anim_z + ((tmp->fin_x * SCALE) +
+			(tmp->fin_y * SCALE)) * sin(0.523599);
 		tmp = tmp->next;
 	}
 }
@@ -311,12 +319,6 @@ int	key_press(int keycode, void **param)
 		SCALE_OLD = SCALE;
 		SCALE++;
 		iso(param[2]);
-		z_rot(param[2], -10);
-		mlx_clear_window(param[0], param[1]);
-		draw_map(param[0], param[1], param[2]);
-	}
-	else if (keycode == 87)
-	{
 		z_rot(param[2], -10);
 		mlx_clear_window(param[0], param[1]);
 		draw_map(param[0], param[1], param[2]);
@@ -400,7 +402,8 @@ void	scaling(t_map *tmp)
 	while (tmp != NULL)
 	{
 		xy[0] = ((tmp->fin_x * SCALE) - (tmp->fin_y * SCALE)) * cos(0.523599);
-		xy[1] = -(tmp->fin_z * SCALE) + ((tmp->fin_x * SCALE) + (tmp->fin_y * SCALE)) * sin(0.523599);
+		xy[1] = -(tmp->fin_z * SCALE) + ((tmp->fin_x * SCALE) +
+			(tmp->fin_y * SCALE)) * sin(0.523599);
 		h[0] = h[0] > xy[0] ? xy[0] : h[0];
 		h[1] = h[1] < xy[0] ? xy[0] : h[1];
 		w[0] = w[0] < xy[1] ? xy[1] : w[0];
