@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/25 19:04:25 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/25 23:35:49 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/26 00:15:31 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,52 +142,53 @@ int		hex_to_int(const char *s)
 	return (i);
 }
 
-// int			pars_line(t_map **map, char **line, int *xyz, int *n)
-// {
-// 	char	d;
-// 	char	*wrd;
-// 	int		h;
+int			*pars_line(t_map **map, char **line, int *xyzh, int *n)
+{
+	char	d;
+	char	*wrd;
 
-// 	wrd = ft_strnew(1);
-// 	while (*line != '\0' && ((d = ft_pars(line, " ,", &wrd)) != -1)
-// 		&& (xyz[1] < n[1]))
-// 	{
-// 		if (d == ',')
-// 			(*map)->color = hex_to_int(wrd);
-// 		else
-// 		{
-// 			xyz[2] = ft_atoi(wrd);
-// 			h = h < ft_abs(xyz[2]) ? ft_abs(xyz[2]) : h;
-// 			push(map, xyz);
-// 			if (xyz[0] > 0)
-// 				(*map)->up = getnth(*map, n[1]);
-// 			xyz[1]++;
-// 		}
-// 	}
-// 	ft_strdel(&wrd);
-// 	return (h);
-// }
+	wrd = ft_strnew(1);
+	while (*line != '\0' && ((d = ft_pars(line, " ,", &wrd)) != -1)
+		&& (xyzh[1] < n[1]))
+	{
+		if (d == ',')
+			(*map)->color = hex_to_int(wrd);
+		else
+		{
+			xyzh[2] = ft_atoi(wrd);
+			xyzh[3] = xyzh[3] < ft_abs(xyzh[2]) ? ft_abs(xyzh[2]) : xyzh[3];
+			push(map, xyzh);
+			if (xyzh[0] > 0)
+				(*map)->up = getnth(*map, n[1]);
+			xyzh[1]++;
+		}
+	}
+	ft_strdel(&wrd);
+	return (xyzh);
+}
+
+void		insert_var(int *xyzh, int *n)
+{
+	n[0] = 0;
+	n[1] = 0;
+	xyzh[0] = 0;
+	xyzh[1] = 0;
+	xyzh[2] = 0;
+	xyzh[3] = 0;
+}
 
 int			read_map(int fd, t_map **map)
 {
 	char	*line;
 	char	*tmp;
-	char	d;
-	char	*wrd;
-
 	int		t;
-	int		xyz[3];
+	int		*xyzh;
 	int		n[2];
 	int		h;
 
-	n[0] = 0;
-	n[1] = 0;
-	xyz[0] = 0;
-	xyz[1] = 0;
-	xyz[2] = 0;
-
+	xyzh = (int *)malloc(sizeof(int) * 4);
+	insert_var(xyzh, n);
 	t = 0;
-	h = 0;
 	while ((t = get_next_line(fd, &line)) > 0)
 	{
 		tmp = line;
@@ -195,27 +196,13 @@ int			read_map(int fd, t_map **map)
 		n[1] = ft_num_words(line, ' ');
 		if (n[0] != 0 && n[1] != n[0])
 			return (ft_report("not valid map"));
-		// h = pars_line(map, &line, xyz, n);
-		while (*line != '\0' && ((d = ft_pars(&line, " ,", &wrd)) != -1)
-			&& (xyz[1] < n[1]))
-		{
-			if (d == ',')
-				(*map)->color = hex_to_int(wrd);
-			else
-			{
-				xyz[2] = ft_atoi(wrd);
-				h = h < ft_abs(xyz[2]) ? ft_abs(xyz[2]) : h;
-				push(map, xyz);
-				if (xyz[0] > 0)
-					(*map)->up = getnth(*map, n[1]);
-				xyz[1]++;
-			}
-		}
-		xyz[0]++;
-		xyz[1] = 0;
+		pars_line(map, &line, xyzh, n);
+		xyzh[0]++;
+		xyzh[1] = 0;
 		ft_strdel(&tmp);
 	}
-
+	h = xyzh[3];
+	free(xyzh);
 	if (t == -1)
 		return (ft_report("read error"));
 	return (h);
