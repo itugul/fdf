@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/26 00:26:48 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/26 02:31:41 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/26 04:00:05 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,10 +34,30 @@ void		insert_glob(t_glob *glob)
 	glob->h = 0;
 	glob->h_a = 0;
 	glob->iso_flag = 1;
+	glob->menu_flag = 0;
 }
 
 void		insert_param(void **param)
 {
 	param[0] = mlx_init();
 	param[1] = mlx_new_window(param[0], 2500, 1300, "test");
+}
+
+int			count_step(float *x, float *y)
+{
+	int		step;
+
+	step = (ft_abs(x[1] - x[0])) >= (ft_abs(y[1] - y[0])) ?
+		(ft_abs(x[1] - x[0])) : (ft_abs(y[1] - y[0]));
+	x[2] = (x[1] - x[0]) / step;
+	y[2] = (y[1] - y[0]) / step;
+	return (step);
+}
+
+void		insert_coord(float *x, float *y, void **param, t_map *map)
+{
+	x[0] = (map->y * ((t_glob **)param)[3]->scale) +
+		((t_glob **)param)[3]->indent_y;
+	y[0] = (map->x * ((t_glob **)param)[3]->scale) +
+		((t_glob **)param)[3]->indent_x;
 }

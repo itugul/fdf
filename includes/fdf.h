@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/04/18 12:30:05 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/26 01:00:49 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/26 03:54:27 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,9 @@ typedef struct s_map	t_map;
 struct					s_map
 {
 	int					line_num;
+	float				x;
+	float				y;
+	float				z;
 	float				anim_x;
 	float				anim_y;
 	float				anim_z;
@@ -45,9 +48,15 @@ struct					s_glob
 	int					anim_flag;
 	int					h;
 	int					h_a;
+	int					iso_flag;
+	int					menu_flag;
 };
 
+int						count_step(float *x, float *y);
 void					key_press78(void **param);
+void					depression(float *x, float *y);
+void					insert_coord(float *x, float *y, void **param, t_map *map);
+void					insert_coord2(float *x, float *y, void **param, t_map *end);
 int						key_press(int keycode, void **param);
 void					key_press2(int keycode, void **param);
 void					key_press78(void **param);
@@ -64,6 +73,8 @@ void					key_press86(void **param);
 void					key_press89(void **param);
 void					key_press91(void **param);
 void					key_press53(void **param);
+void					key_press87(void **param);
+void					key_press4(void **param);
 
 void					insert_glob(t_glob *glob);
 void					insert_param(void **param);
@@ -85,5 +96,6 @@ void					draw_map(void **param);
 int						animacion(void **param);
 void					scaling(t_map *tmp, t_glob *glob);
 int						*pars_line(t_map **map, char **line, int *xyzh, int *n);
+void					menu(void **param);
 
 #endif

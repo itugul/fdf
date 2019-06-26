@@ -6,7 +6,7 @@
 /*   By: fbrekke <fbrekke@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2019/06/26 00:31:05 by fbrekke           #+#    #+#             */
-/*   Updated: 2019/06/26 02:25:55 by fbrekke          ###   ########.fr       */
+/*   Updated: 2019/06/26 03:28:42 by fbrekke          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,6 @@ void	x_rot(t_map *map, int sig)
 		z = map->anim_z;
 		map->anim_y = (y * cos(0.1 * sig)) + (z * sin(0.1 * sig));
 		map->anim_z = (-y * sin(0.1 * sig)) + (z * cos(0.1 * sig));
-		// y = map->fin_y;
-		// z = map->fin_z;
-		// map->fin_y = (y * cos(0.1 * sig)) + (z * sin(0.1 * sig));
-		// map->fin_z = (-y * sin(0.1 * sig)) + (z * cos(0.1 * sig));
 		map = map->next;
 	}
 }
@@ -42,10 +38,6 @@ void	y_rot(t_map *map, int sig)
 		z = map->anim_z;
 		map->anim_x = (x * cos(0.1 * sig)) + (z * sin(0.1 * sig));
 		map->anim_z = (-x * sin(0.1 * sig)) + (z * cos(0.1 * sig));
-		// x = map->fin_x;
-		// z = map->fin_z;
-		// map->fin_x = (x * cos(0.1 * sig)) + (z * sin(0.1 * sig));
-		// map->fin_z = (-x * sin(0.1 * sig)) + (z * cos(0.1 * sig));
 		map = map->next;
 	}
 }
@@ -61,10 +53,6 @@ void	z_rot(t_map *map, int sig)
 		x = map->anim_x;
 		map->anim_x = (x * cos(0.1 * sig)) - (y * sin(0.1 * sig));
 		map->anim_y = (x * sin(0.1 * sig)) + (y * cos(0.1 * sig));
-		// y = map->fin_y;
-		// x = map->fin_x;
-		// map->fin_x = (x * cos(0.1 * sig)) - (y * sin(0.1 * sig));
-		// map->fin_y = (x * sin(0.1 * sig)) + (y * cos(0.1 * sig));
 		map = map->next;
 	}
 }

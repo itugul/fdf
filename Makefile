@@ -6,6 +6,7 @@ SRC = main.c \
 		  key_press1.c \
 		  key_press2.c \
 		  key_press3.c \
+		  key_press4.c \
 		  design.c \
 		  insert.c \
 		  color.c \
@@ -42,7 +43,7 @@ obj:
 	mkdir -p $(OBJDIR)
 
 $(OBJDIR)%.o:$(SRCDIR)%.c
-	$(CC) $(CFLAGS) $(MLX_INC) $(FT_INC) -I $(INCDIR) -o $@ -c $<
+	$(CC) $(CFLAGS) $(MLX_INC) $(FT_INC) -I $(INCDIR) -o $@ -c -g $<
 
 $(FT_LIB):
 	make -C $(FT)
